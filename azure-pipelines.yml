@@ -1,32 +1,40 @@
 # azure-pipelines.yml
-# Two-stage pipeline: Build and Deploy for ASP.NET Core Web App
+# Two-stage pipeline: Build and Deploy ASP.NET Core app from GitHub to Azure Web App
 
 trigger:
-- master
+- main  # or 'master', depending on your default branch
+
+resources:
+  repositories:
+  - repository: self
+    type: github
+    endpoint: 'D1410-uz'    # <-- Replace with your GitHub service connection name
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
 variables:
   buildConfiguration: 'Release'
-  webAppName: 'dotnetproject1'      # <-- Replace with your actual Web App name
-  serviceConnection: 'D1410-uz'  # <-- Replace with your Azure service connection name
+  webAppName: 'dotnetproject1'        # <-- Your Azure Web App name
+  serviceConnection: 'MyAzureConnection'  # <-- Your Azure service connection name
 
 stages:
-# ==============================
-# 1️⃣  BUILD STAGE
-# ==============================
+# =================================
+# 1️⃣ BUILD STAGE
+# =================================
 - stage: Build
   displayName: 'Build Stage'
   jobs:
   - job: Build
-    displayName: 'Build and publish the .NET project'
+    displayName: 'Build and Publish .NET App'
     steps:
     - task: UseDotNet@2
       displayName: 'Install .NET SDK'
       inputs:
         packageType: 'sdk'
-        version: '8.x'     # or 6.x / 7.x depending on your project
+        version: '8.x'      # Change if using .NET 6/7
+
+    - checkout: self
 
     - script: |
         dotnet restore
@@ -43,9 +51,9 @@ stages:
         ArtifactName: 'drop'
         publishLocation: 'Container'
 
-# ==============================
-# 2️⃣  DEPLOY STAGE
-# ==============================
+# =================================
+# 2️⃣ DEPLOY STAGE
+# =================================
 - stage: Deploy
   displayName: 'Deploy Stage'
   dependsOn: Build
@@ -63,6 +71,6 @@ stages:
           - task: AzureWebApp@1
             displayName: 'Deploy to Azure Web App'
             inputs:
-              azureSubscription: '$(serviceConnection)'
-              appName: '$(webAppName)'
+              azureSubscription: '$(serviceConnection)'   # Azure Resource Manager service connection
+              appName: '$(webAppName)'                    # Name of your Web App in Azure
               package: '$(Pipeline.Workspace)/drop'
