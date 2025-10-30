@@ -10,7 +10,7 @@ pool:
 variables:
   buildConfiguration: 'Release'
   webAppName: 'dotnetproject1'      # <-- Replace with your actual Web App name
-  serviceConnection: 'MyServiceConnection'  # <-- Replace with your Azure service connection name
+  serviceConnection: 'D1410-uz'  # <-- Replace with your Azure service connection name
 
 stages:
 # ==============================
